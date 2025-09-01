@@ -2,7 +2,7 @@
 
 This is a simple **Sentiment Analysis Web Application** built with **Flask (Python)** and **Hugging Face Transformers**.  
 It analyzes user input text, detects the **sentiment (Positive / Negative / Neutral)**, and generates a **personalized AI reply**.  
-The frontend is made with **HTML + CSS**, providing a clean and interactive interface.
+The frontend is made with **HTML + CSS + JS**, providing a clean and interactive interface.
 
 ## 🚀 Features
 - 🔍 Analyze text sentiment using **Hugging Face Phase III model (`distilbert-base-uncased-finetuned-sst-2-english`)**
