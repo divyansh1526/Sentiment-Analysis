@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Sentiment AI Chat</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <script src="https://cdn.jsdelivr.net/npm/lottie-web@5.7.6/build/player/lottie.min.js"></script>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body class="bg-gradient-to-br from-fuchsia-500 to-indigo-700 min-h-screen flex items-center justify-center px-4">
+
+  <div class="bg-white/30 backdrop-blur-xl border border-white/20 shadow-2xl rounded-3xl p-8 max-w-4xl w-full grid md:grid-cols-2 gap-8 fade-in-up">
+
+    <!-- Girl Animation -->
+    <div class="flex justify-center items-center">
+      <div id="girlAnimation" class="w-64 h-64 md:w-80 md:h-80"></div>
+    </div>
+
+    <!-- Chat Panel -->
+    <div class="flex flex-col justify-center">
+      <h1 class="text-4xl font-bold mb-4 text-center drop-shadow-md">Sentiment AI 💬</h1>
+      <p class="mb-4 text-center">Your personal AI that understands and speaks to you.</p>
+
+      <textarea id="inputText" rows="4" class="w-full p-4 rounded-xl border border-white/30 bg-white/20 placeholder-white focus:outline-none focus:ring-2 focus:ring-pink-300 backdrop-blur-sm" placeholder="How do you feel today?"></textarea>
+
+      <button onclick="analyzeSentiment()" class="mt-4 bg-pink-600 hover:bg-pink-700 py-2 rounded-xl transition-all duration-300 w-full shadow-lg">
+        👤 Analyze Sentiment
+      </button>
+
+      <div id="result" class="mt-6 bg-white/20 p-4 rounded-xl shadow-inner hidden font-medium backdrop-blur-md"></div>
+    </div>
+
+  </div>
+
+  <script>
+    // Lottie Girl Animation
+    lottie.loadAnimation({
+      container: document.getElementById('girlAnimation'),
+      renderer: 'svg',
+      loop: true,
+      autoplay: true,
+      path: "/static/girl-animation.json"
+    });
+
+    // Load voices on page load
+    let voices = [];
+    window.speechSynthesis.onvoiceschanged = () => {
+      voices = speechSynthesis.getVoices();
+    };
+
+    function speak(text) {
+      const synth = window.speechSynthesis;
+      const utter = new SpeechSynthesisUtterance(text);
+      utter.lang = 'en-US';
+      utter.pitch = 1.2;
+      utter.rate = 1;
+
+      // Pick a female voice
+      const female = voices.find(v => /female|zira|samantha|google.*english/i.test(v.name));
+      if (female) utter.voice = female;
+
+      synth.cancel();
+      synth.speak(utter);
+    }
+
+    async function analyzeSentiment() {
+      const text = document.getElementById("inputText").value.trim();
+      const resultDiv = document.getElementById("result");
+
+      if (!text) {
+        resultDiv.innerHTML = "Please enter some text!";
+        resultDiv.classList.remove("hidden");
+        return;
+      }
+
+      resultDiv.classList.remove("hidden");
+      resultDiv.innerHTML = "<span class='typing'>🤖 Thinking...</span>";
+
+      try {
+        const response = await fetch("/analyze", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ text: text })
+        });
+
+        const data = await response.json();
+        if (data.error) {
+          resultDiv.innerHTML = "❌ Error: " + data.error;
+        } else {
+          const reply = data.ai_reply;
+          resultDiv.innerHTML = `
+            <p class="mt-2 italic">🤖 ${reply}</p>
+          `;
+          speak(reply); // 👩 Speak the AI response
+        }
+      } catch (error) {
+        resultDiv.innerHTML = "⚠️ Something went wrong.";
+      }
+    }
+  </script>
+
+</body>
+</html>
